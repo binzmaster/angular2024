@@ -1,7 +1,7 @@
 <div class ="card mt-3">
     <div class="card-header bg-secondary">ประเภทอาหาร</div>
         <div class="card-body">
-          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalFoodType">
+          <button (click)="clearForm()" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalFoodType">
             <i class="fa fa-plus me-2"></i> เพิ่มรายการ
 
           </button>
@@ -20,10 +20,14 @@
                             <td>{{item.name}}</td>
                             <td>{{item.remark}}</td>
                             <td class="text-center"> 
-                                <button class="btn btn-primary mr-2">
+                                <button class="btn btn-primary mr-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalFoodType"
+                                (click)="edit(item)"
+                                >
                                     <i class="fa fa-pencil"></i>
                                 </button>
-                                <button class="btn btn-danger">
+                                <button class="btn btn-danger" (click)="remove(item)">
                                     <i class="fa fa-times"></i>
                                 </button>
                             </td>

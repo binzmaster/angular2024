@@ -9,6 +9,12 @@ app.use(cors());
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:false}));
 
+app.put('/api/foodType/update', (req,res)=>
+    foodTypeController.update(req, res)
+);
+app.delete('/api/foodType/remove/:id',(req,res)=>
+    foodTypeController.remove(req,res)
+)
 app.post ('/api/foodType/create',(req,res) => 
     foodTypeController.create(req,res)
 );
