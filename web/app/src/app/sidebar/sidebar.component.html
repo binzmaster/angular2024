@@ -7,7 +7,7 @@
     </a>
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" >
       <!-- Sidebar user panel (optional) -->
       @if (name!= undefined){
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
@@ -55,7 +55,7 @@
               <li class="nav-item">
                 <a href="./index.html" class="nav-link active">
                   <i class="far fa-circle nav-icon"></i>
-                  <p>Dashboard v1</p>
+                  <p>{{test}}</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -71,15 +71,58 @@
                 </a>
               </li>
             </ul>
+
+            
+
+
           </li>
           <li class="nav-item">
-            <a href="/foodType" class="nav-link">
+            <a routerLink="/sale" class="nav-link">
+              <i class="nav-icon fas fa-dollar"></i>
+              <p>
+                    ขาย          
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/foodType" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
               <p>
                 ประเภทอาหาร                
               </p>
             </a>
           </li>
+
+          <li class="nav-item">
+            <a routerLink="/foodSize" class="nav-link">
+              <i class="nav-icon fas fa-copy"></i>
+              <p>
+                ขนาด                
+              </p>
+            </a>
+          </li>      
+
+          <li class="nav-item">
+            <a routerLink="/taste" class="nav-link">
+              <i class="nav-icon fas fa-copy"></i>
+              <p>
+                รสชาติ                
+              </p>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a routerLink="/food" class="nav-link">
+              <i class="nav-icon fas fa-table"></i>
+              <p>
+                อาหาร/เครื่องดื่ม                
+              </p>
+            </a>
+          </li>
+
+     
+
+
           <li class="nav-item">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-copy"></i>

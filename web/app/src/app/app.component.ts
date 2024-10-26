@@ -12,6 +12,7 @@ import { SignInComponent } from './sign-in/sign-in.component';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
+  test: string='Sarawut';
   token: string | undefined='';
   ngOnInit (){
     this.token =localStorage.getItem('angular_token')!;

@@ -10,7 +10,7 @@ module.exports={
                     status: "use",
                 },
             });
-            return res.send({message:"success"})
+            return res.send({message:"success"});
         } catch (e) {
             return res.status(500).send({error:e.message})
             

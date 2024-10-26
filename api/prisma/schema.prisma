@@ -25,5 +25,59 @@ model FoodType{
   name String
   remark String?
   status String @default("use")// use , delete
+  FoodSizes FoodSize[]
+  Tastes Taste[]
+  Foods Food[]
 }
+model FoodSize {
+  id Int @id() @default(autoincrement())
+  name String
+  remark String?
+  moneyAdded Int @default(0)
+  status String @default("use")
+  foodTypeId Int
+  FoodType FoodType @relation(fields: [foodTypeId], references: [id])
+}
+model Taste{
+  id Int @id() @default(autoincrement())
+  name String
+  remark String?
+  status String @default("use")
+  foodTypeId Int
+  FoodType FoodType @relation(fields: [foodTypeId], references: [id])
+  
+}
+model Food{
+  id Int @id() @default(autoincrement())
+  foodTypeId Int
+  name String
+  remark String?
+  price Int
+  img String
+  foodType String @default("food")// food; drink
+  status String @default("use")
+  FoodType FoodType @relation(fields: [foodTypeId],references: [id])
+  SaleTemps SaleTemp[]
+  SaleTempDetails SaleTempDetail[]
+}
+model SaleTemp{
+  id Int @id() @default(autoincrement())
+  foodId Int
+  qty Int
+  price Int
+  tableNo Int
+  userId Int
+  Food Food@relation(fields: [foodId],references: [id])
+  addedMoney Int?
+  tasteId Int?
+  
+}
+model SaleTempDetail{
+  id Int @id @default(autoincrement())
+  saleTempId Int
+  addedMoney Int?
+  tasteId Int?
+  foodId Int
+  Food Food @relation(fields: [foodId],references: [id])
 
+}

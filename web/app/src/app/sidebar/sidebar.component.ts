@@ -1,14 +1,16 @@
-import { Component } from '@angular/core';
+import { Component,Input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
+  @Input()test:string='defualt value'
   name: string='';
   ngOnInit(){
     this.name = localStorage.getItem('angular_name')!;
