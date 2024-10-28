@@ -70,6 +70,7 @@ model SaleTemp{
   Food Food@relation(fields: [foodId],references: [id])
   addedMoney Int?
   tasteId Int?
+  SaleTempDetails SaleTempDetail[]
   
 }
 model SaleTempDetail{
@@ -79,5 +80,5 @@ model SaleTempDetail{
   tasteId Int?
   foodId Int
   Food Food @relation(fields: [foodId],references: [id])
-
+  SaleTemp SaleTemp @relation(fields: [saleTempId],references: [id])
 }
