@@ -25,13 +25,33 @@ export class SaleComponent {
   saleTempId: number = 0;
   foodName: String = '';
   saleTempDetail: any = [];
+  foodId: number = 0;
 
-  selectedFoodSize(saleTemp: number, foodSizeId: number) {}
+  selectedFoodSize(saleTempId:number,foodSizeId: number) {
+    try {
+      const payload ={
+        saleTempId:saleTempId,
+        foodSizeId:foodSizeId
+      };
+      this.http
+      .post(config.apiServer+'/api/saleTemp/updateFoodSize',payload)
+      .subscribe((res:any)=>{
+        this.fetchDataSaleTempDetail();
+      })
+    } catch (e: any) {
+      Swal.fire({
+        title: 'error',
+        text: e.message,
+        icon: 'error',
+      });
+    }
+  }
 
   chooseFoodSize(item: any) {
     let foodTypeId: number = item.Food.foodTypeId;
     this.saleTempId = item.id;
     this.foodName = item.Food.name;
+    this.foodId = item.Food.id;
 
     try {
       this.http
@@ -60,7 +80,9 @@ export class SaleComponent {
 
   fetchDataSaleTempDetail() {
     this.http
-      .get(config.apiServer+'/api/saleTemp/listSaleTempDetail/' + this.saleTempId)
+      .get(
+        config.apiServer + '/api/saleTemp/listSaleTempDetail/' + this.saleTempId
+      )
       .subscribe((res: any) => {
         this.saleTempDetail = res.results;
       });

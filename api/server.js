@@ -25,12 +25,15 @@ app.get("/api", (req, res) => {
 //
 //
 //sale Temp
-app.get('/api/saleTemp/listSaleTempDetail/:saleTempId',(req,res)=>
-    saleTempController.listSaleTempDetail(req,res)
-)
-app.post('/api/saleTemp/createDetail',(req,res)=>
-  saleTempController.createDatail(req,res)
-)
+app.post("/api/saleTemp/updateFoodSize", (req, res) =>
+  saleTempController.updateFoodSize(req, res)
+);
+app.get("/api/saleTemp/listSaleTempDetail/:saleTempId", (req, res) =>
+  saleTempController.listSaleTempDetail(req, res)
+);
+app.post("/api/saleTemp/createDetail", (req, res) =>
+  saleTempController.createDatail(req, res)
+);
 app.put("/api/saleTemp/changeQty", (req, res) => {
   saleTempController.changeQty(req, res);
 });

@@ -123,42 +123,66 @@ module.exports = {
       const foodId = req.body.foodId;
       const saleTempId = req.body.saleTempId;
 
-      for (let i = 0; i < qty; i++) {
-        const oldData= await prisma.saleTempDetail.findFirst({
-          where:{
-            foodId:foodId,
-            saleTempId:saleTempId
-          }
-        })
-
-        if(oldData==null){
-        await prisma.saleTempDetail.create({
-          data: {
-            foodId: foodId,
-            saleTempId: saleTempId,
-          },
-        });
-         }
+      const oldData = await prisma.saleTempDetail.findFirst({
+        where: {
+          foodId: foodId,
+          saleTempId: saleTempId,
+        },
+      });
+      if (oldData == null) {
+        for (let i = 0; i < qty; i++) {
+          await prisma.saleTempDetail.create({
+            data: {
+              foodId: foodId,
+              saleTempId: saleTempId,
+            },
+          });
+        }
       }
       return res.send({ message: "success" });
     } catch (e) {
       return res.status(500).send({ error: e.message });
     }
   },
-  listSaleTempDetail: async(req,res)=>{
+  listSaleTempDetail: async (req, res) => {
     try {
-      const rows = await prisma.saleTempDetail.findFirst({
-        where:{
-          saleTempId: parseInt(req.params.saleTempId)
+      const rows = await prisma.saleTempDetail.findMany({
+        include: {
+          Food: true,
         },
-        orderBy:{
-          id:'desc'
-        }
-      })
-      return res.send({results:rows})
+        where: {
+          saleTempId: parseInt(req.params.saleTempId),
+        },
+        orderBy: {
+          id: "desc",
+        },
+      });
+      return res.send({ results: rows });
     } catch (e) {
-      return res.status(500).send({error:e.message})
+      return res.status(500).send({ error: e.message });
     }
-  }
-  
+  },
+  updateFoodSize: async (req, res) => {
+    try {
+      const foodSize = await prisma.foodSize.findFirst({
+        where: {
+          id: req.body.foodSizeId,
+        },
+      });
+      
+
+      await prisma.saleTempDetail.update({
+        data: {
+          addedMoney: foodSize.moneyAdded,
+        },
+        where: {
+          id: req.body.saleTempId,
+        },
+      });
+
+      return res.send({ message: "success" });
+    } catch (e) {
+      return res.status(500).send({ error: e.message });
+    }
+  },
 };

@@ -79,10 +79,12 @@
                 </button>
               </div>
               <div class="col-4">
-                <button class="btn btn-success btn-block" 
-                (click)="chooseFoodSize(item)"
-                data-bs-toggle="modal"
-                data-bs-target="#modalFoodSize">
+                <button
+                  class="btn btn-success btn-block"
+                  (click)="chooseFoodSize(item)"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalFoodSize"
+                >
                   <i class="fa fa-list me-2"></i>
                 </button>
               </div>
@@ -100,35 +102,48 @@
   </div>
 </div>
 
-<app-my-modal modalId="modalFoodSize" title="เลือกขนาด">
-  <div class="h4">{{foodName}}</div>
+<app-my-modal modalId="modalFoodSize" title="เลือกขนาด" modalSize="modal-lg">
+  <div class="h4">{{ foodName }}</div>
   <table class="mt-3 table table-bordered table-striped">
     <thead>
       <tr>
         <th>รายการ</th>
-        <th>จำนวน</th>
-        <th>เลือกขนาด</th>
+        <th width="100px" class="text-end">จำนวน</th>
+        <th width="250px" class="text-center">เลือกขนาด</th>
       </tr>
     </thead>
     <tbody>
-     <tr>
-      <td></td>
-      <td></td>
-      <td></td>
-     </tr>
-    </tbody>
+      @for (item of saleTempDetail; track $index) {
+      <tr>
+        <td>{{ item.Food.name }}</td>
+        <td class="text-end">1</td>
+        <td class="text-center">
+          @for (foodSize of foodSizes; track $index) {
+            @if(foodSize.moneyAdded>0) 
+            {
+              @if(foodSize.moneyAdded!=item.addedMoney)
+              {
 
-  </table>
- <div class="text-center">
-  @for (item of foodSizes; track $index) {
-    <button class="btn btn-primary btn-lg me-2">
-
-      {{item.name}}
-      @if(item.moneyAdded>0)
-      {
-      + {{item.moneyAdded}} บาท
+              
+          <button
+            class="btn btn-outline-primary btn-sm me-1"
+            (click)="selectedFoodSize(item.id, foodSize.id)"
+            >
+            {{ foodSize.name }}
+            +{{ foodSize.moneyAdded }} บาท
+          </button>
+          }@else 
+          {
+            <button class="btn btn-primary btn-sm me-2">
+              {{ foodSize.name }}
+              +{{ foodSize.moneyAdded }} บาท
+            </button>
+          }
+          } 
+          }
+        </td>
+      </tr>
       }
-    </button>
-  }
- </div>
+    </tbody>
+  </table>
 </app-my-modal>
