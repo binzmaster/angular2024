@@ -48,6 +48,7 @@ module.exports = {
       const rows = await prisma.saleTemp.findMany({
         include: {
           Food: true,
+          SaleTempDetails:true,
         },
         where: {
           userId: parseInt(req.params.userId),
@@ -75,12 +76,39 @@ module.exports = {
   },
   remove: async (req, res) => {
     try {
-      await prisma.saleTemp.deleteMany({
+      const oldData = await prisma.saleTemp.findFirst({
         where: {
           foodId: parseInt(req.params.foodId),
           userId: parseInt(req.params.userId),
         },
+        include: {
+          SaleTempDetails: true
+        }
       });
+
+      if (oldData.saleTempDetails != null) {
+        await prisma.saleTemp.deleteMany({
+          where: {
+            foodId: parseInt(req.params.foodId),
+            userId: parseInt(req.params.userId),
+          },
+        });
+      } else {
+        // remove from saleTempDetails
+        await prisma.saleTempDetail.deleteMany({
+          where: {
+            saleTempId: oldData.id
+          }
+        })
+
+        // remove from saleTemp
+        await prisma.saleTemp.delete({
+          where: {
+            id: oldData.id
+          }
+        })
+      }
+
       return res.send({ message: "success" });
     } catch (e) {
       return res.status(500).send({ error: e.message });
@@ -185,4 +213,21 @@ module.exports = {
       return res.status(500).send({ error: e.message });
     }
   },
+  listByFoodTypeId: async(req,res)=>{
+    try {
+      const rows = await prisma.taste.findMany({
+        where:{
+          foodTypeId:parseInt(req.params.foodTypeId),
+          status:'use'
+        },
+        orderBy:{
+          name:'asc'
+        }
+      })
+      return res.send({results:rows})
+    } catch (e) {
+      return res.status(500).send({error:e.message})
+      
+    }
+  }
 };

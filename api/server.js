@@ -25,6 +25,7 @@ app.get("/api", (req, res) => {
 //
 //
 //sale Temp
+
 app.post("/api/saleTemp/updateFoodSize", (req, res) =>
   saleTempController.updateFoodSize(req, res)
 );
@@ -100,6 +101,9 @@ app.put("/api/foodSize/update", (req, res) => {
 //
 //
 // Taste
+app.get("/api/taste/listByFoodTypeId/:foodTypeId", (req, res) =>
+  tasteController.listByFoodTypeId(req, res)
+);
 app.post("/api/taste/create", (req, res) => {
   tasteController.create(req, res);
 });

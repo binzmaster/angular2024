@@ -26,6 +26,9 @@ export class SaleComponent {
   foodName: String = '';
   saleTempDetail: any = [];
   foodId: number = 0;
+  tastes:any=[];
+
+
 
   selectedFoodSize(saleTempId:number,foodSizeId: number) {
     try {
@@ -36,6 +39,7 @@ export class SaleComponent {
       this.http
       .post(config.apiServer+'/api/saleTemp/updateFoodSize',payload)
       .subscribe((res:any)=>{
+        this.fetchDataSaleTemp();
         this.fetchDataSaleTempDetail();
       })
     } catch (e: any) {
@@ -79,13 +83,30 @@ export class SaleComponent {
   }
 
   fetchDataSaleTempDetail() {
+    
     this.http
       .get(
         config.apiServer + '/api/saleTemp/listSaleTempDetail/' + this.saleTempId
       )
       .subscribe((res: any) => {
         this.saleTempDetail = res.results;
+       
+        this.computeAmount();
       });
+  }
+  computeAmount(){
+    this.amount=0;
+    for(let i = 0;i<this.saleTemps.length;i++){
+      const item = this.saleTemps[i];
+      const totalPerRow=item.qty*item.price;
+      //console.log(totalPerRow);
+      for(let j =0;j<item.saleTempDetails.length;j++){
+        this.amount +=item.SaleTempDetails[j].addedMoney; 
+      }
+      this.amount+=totalPerRow;
+    }
+     
+  
   }
 
   async removeItem(item: any) {
@@ -106,10 +127,12 @@ export class SaleComponent {
               '/' +
               this.userId
           )
+          
           .subscribe((res: any) => {
             this.fetchDataSaleTemp();
           });
       }
+      
     } catch (e: any) {
       Swal.fire({
         title: 'error',
@@ -164,8 +187,9 @@ export class SaleComponent {
 
     if (userId !== null) {
       this.userId = parseInt(userId);
+      this.fetchDataSaleTemp();
     }
-    this.fetchDataSaleTemp();
+    
   }
 
   saveToSaleTemp(item: any) {
@@ -242,6 +266,22 @@ export class SaleComponent {
         text: e.message,
         icon: 'error',
       });
+    }
+  }
+
+  fetchDataTaste(foodTypeId:number){
+    try {
+      this.http.get(config.apiServer+'/api/taste/listByFoodTypeId'+foodTypeId)
+      .subscribe((res:any)=>{
+        this.tastes=res.results;
+      })
+      
+    } catch (e:any) {
+      Swal.fire({
+        title:'error',
+        text:e.message,
+        icon:'error'
+      })
     }
   }
 }
