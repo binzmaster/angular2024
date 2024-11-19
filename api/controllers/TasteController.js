@@ -1,4 +1,5 @@
-const {PrismaClient} = require('@prisma/client')
+const {PrismaClient} = require('@prisma/client');
+const { listByFoodTypeId } = require('./SaleTempController');
 const prisma =new PrismaClient();
 module.exports ={
     create:async(req,res)=>{
@@ -67,6 +68,22 @@ module.exports ={
         } catch (e) {
           return res.status(500).send({error:e.message})  
         }
+    },
+    listByFoodTypeId: async(req,res)=>{
+        try {
+           const rows = await prisma.taste.findMany({
+            where:{
+                foodTypeId:parseInt(req.params.foodTypeId),
+                status:'use'
+            },
+            orderBy:{
+                name:'asc'
+            }
+           })
+           
+           return res.send({results:rows})
+        } catch (e) {
+            return res.status(500).send({error:e.message})            
+        }
     }
-
 }

@@ -10,6 +10,7 @@ const tasteController = require("./controllers/TasteController");
 const foodController = require("./controllers/FoodController");
 const { execArgv } = require("process");
 const saleTempController = require("./controllers/SaleTempController");
+const organizationController = require("./controllers/OrganizationController");
 
 app.use(cors());
 app.use(fileUpload());
@@ -23,9 +24,36 @@ app.get("/api", (req, res) => {
 });
 
 //
+// organization
+//
+app.post("/api/organization/upload", (req, res) =>
+  organizationController.upload(req, res)
+);
+app.post("/api/organization/save", (req, res) =>
+  organizationController.create(req, res)
+);
+app.get("/api/organization/info", (req, res) =>
+  organizationController.info(req, res)
+);
+
+//
 //
 //sale Temp
-
+app.post("/api/saleTemp/printBillBeforePay", (req, res) =>
+  saleTempController.printBillBeforePay(req, res)
+);
+app.post("/api/saleTemp/endSale", (req, res) =>
+  saleTempController.endSale(req, res)
+);
+app.delete("/api/saleTemp/removeSaleTempDetail/:id", (req, res) =>
+  saleTempController.removeSaleTempDetail(req, res)
+);
+app.post("/api/saleTemp/newSaleTempDetail", (req, res) =>
+  saleTempController.newSaleTempDetail(req, res)
+);
+app.post("/api/saleTemp/updateTaste", (req, res) =>
+  saleTempController.updateTaste(req, res)
+);
 app.post("/api/saleTemp/updateFoodSize", (req, res) =>
   saleTempController.updateFoodSize(req, res)
 );
@@ -101,6 +129,9 @@ app.put("/api/foodSize/update", (req, res) => {
 //
 //
 // Taste
+app.get("/api/taste/listByFoodTypeId/:foodTypeId", (req, res) =>
+  tasteController.listByFoodTypeId(req, res)
+);
 app.get("/api/taste/listByFoodTypeId/:foodTypeId", (req, res) =>
   tasteController.listByFoodTypeId(req, res)
 );

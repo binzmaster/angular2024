@@ -26,22 +26,127 @@ export class SaleComponent {
   foodName: String = '';
   saleTempDetail: any = [];
   foodId: number = 0;
-  tastes:any=[];
+  tastes: any = [];
+  payType: string = 'cash';
+  inputMoney: number = 0;
+  returnMoney: number = 0;
+  billForPayUrl:string='';
 
-
-
-  selectedFoodSize(saleTempId:number,foodSizeId: number) {
+  async printBillBeforePay() {
     try {
-      const payload ={
-        saleTempId:saleTempId,
-        foodSizeId:foodSizeId
+      const payload = {
+        userId: this.userId,
+        tableNo: this.tableNo
+      }
+
+      const url = config.apiServer + '/api/saleTemp/printBillBeforePay';
+      const res: any = await firstValueFrom(this.http.post(url, payload));
+
+      setTimeout(() => {
+        this.billForPayUrl = config.apiServer + '/' + res.fileName;
+        document.getElementById('pdf-frame')?.setAttribute('src', this.billForPayUrl);
+      }, 1000);
+    } catch (e: any) {
+      Swal.fire({
+        title: 'error',
+        text: e.message,
+        icon: 'error'
+      })
+    }
+  }
+
+  endSale() {
+    try {
+      const payload = {
+        userId: this.userId,
+        inputMoney: this.inputMoney,
+        amount: this.amount,
+        returnMoney: this.returnMoney,
+        payType: this.payType,
+        tableNo: this.tableNo,
       };
       this.http
-      .post(config.apiServer+'/api/saleTemp/updateFoodSize',payload)
-      .subscribe((res:any)=>{
-        this.fetchDataSaleTemp();
-        this.fetchDataSaleTempDetail();
-      })
+        .post(config.apiServer + '/api/saleTemp/endSale', payload)
+        .subscribe((res: any) => {
+          this.fetchDataSaleTemp();
+          document.getElementById('modalEndSale_btnClose')?.click();
+          this.clearForm();
+        });
+    } catch (e: any) {
+      Swal.fire({
+        title: 'error',
+        text: e.message,
+        icon: 'error',
+      });
+    }
+  }
+  clearForm() {
+    this.payType = 'cash';
+    this.inputMoney = 0;
+    this.returnMoney = 0;
+    this.amount = 0;
+  }
+
+  getClassNameOfButton(inputMoney: number) {
+    let cssClass = 'btn btn-block btn-lg';
+    if (this.inputMoney == inputMoney) {
+      cssClass += ' btn-secondary';
+    } else {
+      cssClass += ' btn-outline-secondary';
+    }
+    return cssClass;
+  }
+
+  changeInputMoney(inputMoney: number) {
+    this.inputMoney = inputMoney;
+    this.returnMoney = this.inputMoney - this.amount;
+  }
+
+  selectedPayType(payType: string) {
+    this.payType = payType;
+  }
+  getClassName(payType: string) {
+    let cssClass = 'btn btn-block btn-lg';
+    if (this.payType == payType) {
+      cssClass += ' btn-secondary';
+    } else {
+      cssClass += ' btn-outline-secondary';
+    }
+    return cssClass;
+  }
+
+  selectedTaste(saleTempId: number, tasteId: number) {
+    try {
+      const payload = {
+        saleTempId: saleTempId,
+        tasteId: tasteId,
+      };
+      this.http
+        .post(config.apiServer + '/api/saleTemp/updateTaste', payload)
+        .subscribe((res: any) => {
+          this.fetchDataSaleTempDetail();
+        });
+    } catch (e: any) {
+      Swal.fire({
+        title: 'error',
+        text: e.message,
+        icon: 'error',
+      });
+    }
+  }
+
+  selectedFoodSize(saleTempId: number, foodSizeId: number) {
+    try {
+      const payload = {
+        saleTempId: saleTempId,
+        foodSizeId: foodSizeId,
+      };
+      this.http
+        .post(config.apiServer + '/api/saleTemp/updateFoodSize', payload)
+        .subscribe((res: any) => {
+          this.fetchDataSaleTemp();
+          this.fetchDataSaleTempDetail();
+        });
     } catch (e: any) {
       Swal.fire({
         title: 'error',
@@ -56,6 +161,7 @@ export class SaleComponent {
     this.saleTempId = item.id;
     this.foodName = item.Food.name;
     this.foodId = item.Food.id;
+    this.fetchDataTaste(foodTypeId);
 
     try {
       this.http
@@ -71,6 +177,7 @@ export class SaleComponent {
       this.http
         .post(config.apiServer + '/api/saleTemp/createDetail', payload)
         .subscribe((res: any) => {
+          this.fetchDataSaleTemp();
           this.fetchDataSaleTempDetail();
         });
     } catch (e: any) {
@@ -83,30 +190,32 @@ export class SaleComponent {
   }
 
   fetchDataSaleTempDetail() {
-    
+    //listSaleTempDetail
+
     this.http
       .get(
         config.apiServer + '/api/saleTemp/listSaleTempDetail/' + this.saleTempId
       )
       .subscribe((res: any) => {
         this.saleTempDetail = res.results;
-       
+        // console.log(this.saleTempDetail);
+
         this.computeAmount();
       });
   }
-  computeAmount(){
-    this.amount=0;
-    for(let i = 0;i<this.saleTemps.length;i++){
+  computeAmount() {
+    this.amount = 0;
+
+    for (let i = 0; i < this.saleTemps.length; i++) {
       const item = this.saleTemps[i];
-      const totalPerRow=item.qty*item.price;
-      //console.log(totalPerRow);
-      for(let j =0;j<item.saleTempDetails.length;j++){
-        this.amount +=item.SaleTempDetails[j].addedMoney; 
+      const totalPerRow = item.qty * item.price;
+
+      for (let j = 0; j < item.SaleTempDetails.length; j++) {
+        this.amount += item.SaleTempDetails[j].addedMoney;
       }
-      this.amount+=totalPerRow;
+
+      this.amount += totalPerRow;
     }
-     
-  
   }
 
   async removeItem(item: any) {
@@ -127,12 +236,11 @@ export class SaleComponent {
               '/' +
               this.userId
           )
-          
+
           .subscribe((res: any) => {
             this.fetchDataSaleTemp();
           });
       }
-      
     } catch (e: any) {
       Swal.fire({
         title: 'error',
@@ -188,8 +296,8 @@ export class SaleComponent {
     if (userId !== null) {
       this.userId = parseInt(userId);
       this.fetchDataSaleTemp();
+      //this.computeAmount();
     }
-    
   }
 
   saveToSaleTemp(item: any) {
@@ -221,13 +329,16 @@ export class SaleComponent {
         .get(config.apiServer + '/api/saleTemp/list/' + this.userId)
         .subscribe((res: any) => {
           this.saleTemps = res.results;
-          this.amount = 0;
+
           for (let i = 0; i < this.saleTemps.length; i++) {
             const item = this.saleTemps[i];
-            const qty = item.qty;
-            const price = item.price;
-            this.amount += qty * price;
+            if (item.SaleTempDetails.length > 0) {
+              item.qty = item.SaleTempDetails.length;
+              item.disabledQtyButton = true;
+            }
           }
+          this.computeAmount();
+          console.log(this.saleTemps);
         });
     } catch (e: any) {
       Swal.fire({
@@ -269,19 +380,64 @@ export class SaleComponent {
     }
   }
 
-  fetchDataTaste(foodTypeId:number){
+  fetchDataTaste(foodTypeId: number) {
     try {
-      this.http.get(config.apiServer+'/api/taste/listByFoodTypeId'+foodTypeId)
-      .subscribe((res:any)=>{
-        this.tastes=res.results;
-      })
-      
-    } catch (e:any) {
+      this.http
+        .get(config.apiServer + '/api/taste/listByFoodTypeId/' + foodTypeId)
+        .subscribe((res: any) => {
+          this.tastes = res.results;
+        });
+    } catch (e: any) {
       Swal.fire({
-        title:'error',
-        text:e.message,
-        icon:'error'
-      })
+        title: 'error',
+        text: e.message,
+        icon: 'error',
+      });
+    }
+  }
+  newSaleTempDetail() {
+    try {
+      const payload = {
+        saleTempId: this.saleTempId,
+        foodId: this.foodId,
+      };
+      this.http
+        .post(config.apiServer + '/api/saleTemp/newSaleTempDetail', payload)
+        .subscribe((res: any) => {
+          this.fetchDataSaleTempDetail();
+          this.fetchDataSaleTemp();
+        });
+    } catch (e: any) {
+      Swal.fire({
+        title: 'error',
+        text: e.message,
+        icon: 'error',
+      });
+    }
+  }
+  async removeSaleTempDetail(id: number) {
+    try {
+      const button = await Swal.fire({
+        title: 'ยกเลิกรายการ',
+        text: 'คุณต้องการยกเลิกใช่หรือไม่',
+        icon: 'question',
+        showCancelButton: true,
+        showConfirmButton: true,
+      });
+      if (button.isConfirmed) {
+        this.http
+          .delete(config.apiServer + '/api/saleTemp/removeSaleTempDetail/' + id)
+          .subscribe((res: any) => {
+            this.fetchDataSaleTempDetail();
+            this.fetchDataSaleTemp();
+          });
+      }
+    } catch (e: any) {
+      Swal.fire({
+        title: 'error',
+        text: e.message,
+        icon: 'error',
+      });
     }
   }
 }

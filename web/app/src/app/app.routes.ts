@@ -5,6 +5,7 @@ import { FoodSizeComponent } from './food-size/food-size.component';
 import { TasteComponent } from './taste/taste.component';
 import { FoodComponent } from './food/food.component';
 import { SaleComponent } from './sale/sale.component';
+import { OrganizationComponent } from './organization/organization.component';
 
 export const routes: Routes = [
     {
@@ -31,5 +32,9 @@ export const routes: Routes = [
     {
         path:'sale',
         component:SaleComponent,
+    },
+    {
+        path:'organization',
+        component:OrganizationComponent,
     }
 ];

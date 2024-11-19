@@ -48,7 +48,7 @@ module.exports = {
       const rows = await prisma.saleTemp.findMany({
         include: {
           Food: true,
-          SaleTempDetails:true,
+          SaleTempDetails: true,
         },
         where: {
           userId: parseInt(req.params.userId),
@@ -82,8 +82,8 @@ module.exports = {
           userId: parseInt(req.params.userId),
         },
         include: {
-          SaleTempDetails: true
-        }
+          SaleTempDetails: true,
+        },
       });
 
       if (oldData.saleTempDetails != null) {
@@ -97,16 +97,16 @@ module.exports = {
         // remove from saleTempDetails
         await prisma.saleTempDetail.deleteMany({
           where: {
-            saleTempId: oldData.id
-          }
-        })
+            saleTempId: oldData.id,
+          },
+        });
 
         // remove from saleTemp
         await prisma.saleTemp.delete({
           where: {
-            id: oldData.id
-          }
-        })
+            id: oldData.id,
+          },
+        });
       }
 
       return res.send({ message: "success" });
@@ -185,7 +185,22 @@ module.exports = {
           id: "desc",
         },
       });
-      return res.send({ results: rows });
+
+      const arr = [];
+      for (let i = 0; i < rows.length; i++) {
+        const item = rows[i];
+        if (item.tasteId != null) {
+          const taste = await prisma.taste.findFirst({
+            where: {
+              id: item.tasteId,
+            },
+          });
+          item.tasteName = taste.name;
+        }
+        arr.push(item);
+      }
+
+      return res.send({ results: arr });
     } catch (e) {
       return res.status(500).send({ error: e.message });
     }
@@ -197,7 +212,6 @@ module.exports = {
           id: req.body.foodSizeId,
         },
       });
-      
 
       await prisma.saleTempDetail.update({
         data: {
@@ -213,21 +227,234 @@ module.exports = {
       return res.status(500).send({ error: e.message });
     }
   },
-  listByFoodTypeId: async(req,res)=>{
+  listByFoodTypeId: async (req, res) => {
     try {
       const rows = await prisma.taste.findMany({
-        where:{
-          foodTypeId:parseInt(req.params.foodTypeId),
-          status:'use'
+        where: {
+          foodTypeId: parseInt(req.params.foodTypeId),
+          status: "use",
         },
-        orderBy:{
-          name:'asc'
-        }
-      })
-      return res.send({results:rows})
+        orderBy: {
+          name: "asc",
+        },
+      });
+
+      return res.send({ results: rows });
     } catch (e) {
-      return res.status(500).send({error:e.message})
-      
+      return res.status(500).send({ error: e.message });
     }
-  }
+  },
+  updateTaste: async (req, res) => {
+    try {
+      await prisma.saleTempDetail.update({
+        data: {
+          tasteId: req.body.tasteId,
+        },
+        where: {
+          id: req.body.saleTempId,
+        },
+      });
+      return res.send({ message: "success" });
+    } catch (e) {
+      return res.status(500).send({ error: e.message });
+    }
+  },
+  newSaleTempDetail: async (req, res) => {
+    try {
+      await prisma.saleTempDetail.create({
+        data: {
+          saleTempId: req.body.saleTempId,
+          foodId: req.body.foodId,
+        },
+      });
+      return res.send({ message: "success" });
+    } catch (e) {
+      //console.log(e)
+      return res.status(500).send({ error: e.message });
+    }
+  },
+  removeSaleTempDetail: async (req, res) => {
+    try {
+      await prisma.saleTempDetail.delete({
+        where: {
+          id: parseInt(req.params.id),
+        },
+      });
+      return res.send({ message: "success" });
+    } catch (e) {
+      return res.status(500).send({ error: e.message });
+    }
+  },
+  endSale: async (req, res) => {
+    try {
+      const saleTemps = await prisma.saleTemp.findMany({
+        include: {
+          SaleTempDetails: {
+            include: {
+              Food: true,
+            },
+          },
+          Food: true,
+        },
+        where: {
+          userId: req.body.userId,
+        },
+      });
+
+      console.log(req.body);
+      const billSale = await prisma.billSale.create({
+        data: {
+          amount: req.body.amount,
+          inputMoney: req.body.inputMoney,
+          payType: req.body.payType,
+          tableNo: req.body.tableNo,
+          userId: req.body.userId,
+          returnMoney: req.body.returnMoney,
+        },
+      });
+      for (let i = 0; i < saleTemps.length; i++) {
+        const item = saleTemps[i];
+        if (item.SaleTempDetails.length > 0) {
+          // have details
+          for (let j = 0; j < item.SaleTempDetails.length; j++) {
+            const detail = item.SaleTempDetails[j];
+            await prisma.billSaleDetail.create({
+              data: {
+                billSaleId: billSale.id,
+                foodId: detail.foodId,
+                tasteId: detail.tasteId,
+                moneyAdded: detail.addedMoney,
+                price: detail.Food.price,
+              },
+            });
+          }
+        } else {
+          //no details
+          await prisma.billSaleDetail.create({
+            data: {
+              billSaleId: billSale.id,
+              foodId: item.foodId,
+              price: item.Food.Price,
+            },
+          });
+        }
+      }
+      for (let i = 0; i < saleTemps.length; i++) {
+        const item = saleTemps[i];
+        await prisma.saleTempDetail.deleteMany({
+          where: {
+            saleTempId: item.id,
+          },
+        });
+      }
+      await prisma.saleTemp.deleteMany({
+        where: {
+          userId: req.body.userId,
+        },
+      });
+      return res.send({ message: "success" });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).send({ error: e.message });
+    }
+  },
+  printBillBeforePay: async (req, res) => {
+    try {
+      // organization
+      const organization = await prisma.organization.findFirst();
+
+      // rows in saleTemps
+      const saleTemps = await prisma.saleTemp.findMany({
+        include: {
+          Food: true,
+          SaleTempDetails: true
+        },
+        where: {
+          userId: req.body.userId,
+          tableNo: req.body.tableNo
+        }
+      });
+
+      // create bill by pkfkit
+      const pdfkit = require('pdfkit');
+      const fs = require('fs');
+      const dayjs = require('dayjs');
+
+      const paperWidth = 80;
+      const padding = 3;
+
+      const doc = new pdfkit({
+        size: [paperWidth, 200],
+        margins: {
+          top: 3,
+          bottom: 3,
+          left: 3,
+          right: 3,
+        },
+      });
+      const fileName = `uploads/bill-${dayjs(new Date()).format('YYYYMMDDHHmmss')}.pdf`;
+      const font = 'Kanit/kanit-regular.ttf';
+
+      doc.pipe(fs.createWriteStream(fileName));
+
+      // display logo
+      const imageWidth = 20;
+      const positionX = (paperWidth / 2) - (imageWidth / 2);
+      doc.image('uploads/' + organization.logo, positionX, 5, {
+        align: 'center',
+        width: imageWidth,
+        height: 20
+      })
+      doc.moveDown();
+
+      doc.font(font);
+      doc.fontSize(5).text('*** ใบแจ้งรายการ ***', 20, doc.y + 8);
+      doc.fontSize(8);
+      doc.text(organization.name, padding, doc.y);
+      doc.fontSize(3);
+      doc.text(organization.address);
+      doc.text(`เบอร์โทร: ${organization.phone}`);
+      doc.text(`เลขประจำตัวผู้เสียภาษี: ${organization.taxCode}`);
+      doc.text(`โต๊ะ: ${req.body.tableNo}`, { align: 'center' });
+      doc.text(`วันที่: ${dayjs(new Date()).format('DD/MM/YYYY HH:mm:ss')}`, { align: 'center' });
+      doc.text('รายการอาหาร', { align: 'center' });
+      doc.moveDown();
+
+      const y = doc.y;
+      doc.fontSize(4);
+      doc.text('รายการ', padding, y);
+      doc.text('ราคา', padding + 18, y, { align: 'right', width: 20 });
+      doc.text('จำนวน', padding + 36, y, { align: 'right', width: 20 });
+      doc.text('รวม', padding + 55, y, { align: 'right' });
+
+      // line
+      // set border height
+      doc.lineWidth(0.1);
+      doc.moveTo(padding, y + 6).lineTo(paperWidth - padding, y + 6).stroke();
+
+      // loop saleTemps
+      saleTemps.map((item, index) => {
+        const y = doc.y;
+        doc.text(item.Food.name, padding, y);
+        doc.text(item.Food.price, padding + 18, y, { align: 'right', width: 20 });
+        doc.text(item.qty, padding + 36, y, { align: 'right', width: 20 });
+        doc.text(item.Food.price * item.qty, padding + 55, y, { align: 'right' });
+      });
+
+      // sum amount
+      let sumAmount = 0;
+      saleTemps.forEach((item) => {
+        sumAmount += item.price * item.qty;
+      });
+
+      // display amount
+      doc.text(`รวม: ${sumAmount} บาท`, { align: 'right' });
+      doc.end();
+
+      return res.send({ message: 'success', fileName: fileName });
+    } catch (e) {
+      return res.status(500).send({ error: e.message })
+    }
+    
+  },
 };
