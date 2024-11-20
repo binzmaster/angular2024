@@ -11,6 +11,7 @@ const foodController = require("./controllers/FoodController");
 const { execArgv } = require("process");
 const saleTempController = require("./controllers/SaleTempController");
 const organizationController = require("./controllers/OrganizationController");
+const billSaleController = require("./controllers/BillSaleController");
 
 app.use(cors());
 app.use(fileUpload());
@@ -22,6 +23,11 @@ app.get("/api", (req, res) => {
   const { email, password } = req.body;
   console.log(email, password);
 });
+
+//
+// billSale
+//
+app.post("/api/billSale/list", (req, res) => billSaleController.list(req, res));
 
 //
 // organization
@@ -39,6 +45,9 @@ app.get("/api/organization/info", (req, res) =>
 //
 //
 //sale Temp
+app.post("/api/saleTemp/printBillAfterPay", (req, res) =>
+  saleTempController.printBillAfterPay(req, res)
+);
 app.post("/api/saleTemp/printBillBeforePay", (req, res) =>
   saleTempController.printBillBeforePay(req, res)
 );
