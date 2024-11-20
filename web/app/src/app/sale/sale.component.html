@@ -242,13 +242,14 @@
         </button>
        </div>
        <div class="col-6">
-        <button class="btn btn-success btn-lg btn-block" (click)="endSale()">
+        <button class="btn btn-success btn-lg btn-block"[disabled]="inputMoney<amount" (click)="endSale()">
           จบการขาย
         </button>
        </div>
     </div>
   </div>
 </app-my-modal>
+<button style="display: none;" id="btnPrintBill" data-bs-toggle="modal" data-bs-target="#modalBillForPay"></button>
 <app-my-modal modalId="modalBillForPay" title="พิมพ์บิล" modalSize="modal-lg">
   <iframe id="pdf-frame" height="500px" style="width: 100%; transform: 3; transform-origin: 0.0;"
       frameBorder="0"></iframe>

@@ -30,28 +30,52 @@ export class SaleComponent {
   payType: string = 'cash';
   inputMoney: number = 0;
   returnMoney: number = 0;
-  billForPayUrl:string='';
+  billForPayUrl: string = '';
 
   async printBillBeforePay() {
     try {
       const payload = {
         userId: this.userId,
-        tableNo: this.tableNo
-      }
+        tableNo: this.tableNo,
+      };
 
       const url = config.apiServer + '/api/saleTemp/printBillBeforePay';
       const res: any = await firstValueFrom(this.http.post(url, payload));
 
       setTimeout(() => {
         this.billForPayUrl = config.apiServer + '/' + res.fileName;
-        document.getElementById('pdf-frame')?.setAttribute('src', this.billForPayUrl);
-      }, 1000);
+        document
+          .getElementById('pdf-frame')
+          ?.setAttribute('src', this.billForPayUrl);
+      }, 1500);
     } catch (e: any) {
       Swal.fire({
         title: 'error',
         text: e.message,
-        icon: 'error'
-      })
+        icon: 'error',
+      });
+    }
+  }
+
+  async printBillAfterPay() {
+    try {
+      const payload = {
+        userId: this.userId,
+        tableNo: this.tableNo,
+      };
+      const url = config.apiServer + '/api/saleTemp/printBillAfterPay';
+      const res: any = await firstValueFrom(this.http.post(url, payload));
+
+      setTimeout(() => {
+        const iframe = document.getElementById('pdf-frame') as HTMLIFrameElement;
+        iframe.setAttribute('src',config.apiServer+'/'+ res.fileName)
+      }, 1500);
+    } catch (e: any) {
+      Swal.fire({
+        title: 'error',
+        text: e.message,
+        icon: 'error',
+      });
     }
   }
 
@@ -71,6 +95,11 @@ export class SaleComponent {
           this.fetchDataSaleTemp();
           document.getElementById('modalEndSale_btnClose')?.click();
           this.clearForm();
+          
+         const btnPrintBill = document.getElementById('btnPrintBill')as HTMLBRElement;
+         btnPrintBill.click();
+         this.printBillAfterPay
+
         });
     } catch (e: any) {
       Swal.fire({
