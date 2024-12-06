@@ -329,6 +329,25 @@ module.exports = {
             });
           }
         } else {
+          if(item.qty>0)
+            {
+              //qty >1
+              for (let j =0;j<item.qty; j++){
+
+                await prisma.billSaleDetail.create({
+                  data:{
+                    billSaleId:billSale.id,
+                    foodId:item.foodId,
+                    price: item.Food.price
+
+                  }
+                })
+              }
+
+          }else{
+
+            //gty=1
+          }
           //no details
           await prisma.billSaleDetail.create({
             data: {
@@ -339,6 +358,9 @@ module.exports = {
           });
         }
       }
+      //
+      // clear sale temp and detail
+      //
       for (let i = 0; i < saleTemps.length; i++) {
         const item = saleTemps[i];
         await prisma.saleTempDetail.deleteMany({
@@ -461,28 +483,29 @@ module.exports = {
     try {
       // organization
       const organization = await prisma.organization.findFirst();
+
+      // billSale
       const billSale = await prisma.billSale.findFirst({
-        where:{
-          id:req.body.billSaleId,
-          tableNo:req.body.tableNo,
-          status:'use'
+        where: {
+          userId: req.body.userId,
+          tableNo: req.body.tableNo,
+          status: 'use'
         },
-        include:{
-          BillSaleDetails:{
-            include:{
-              Food:true
+        include: {
+          BillSaleDetails: {
+            include: {
+              Food: true
             }
           },
-          User:true
+          User: true
         },
-        orderBy:{
-          id:'desc'
+        orderBy: {
+          id: 'desc'
         }
-      });
-    
-      // rows in saleTemps
+      })
+
+      // saleTemps
       const billSaleDetails = billSale.BillSaleDetails;
-   
 
       // create bill by pkfkit
       const pdfkit = require('pdfkit');
@@ -520,7 +543,7 @@ module.exports = {
       doc.fontSize(5).text('*** ใบเสร็จรับเงิน ***', 20, doc.y + 8);
       doc.fontSize(8);
       doc.text(organization.name, padding, doc.y);
-      doc.fontSize(3);
+      doc.fontSize(5);
       doc.text(organization.address);
       doc.text(`เบอร์โทร: ${organization.phone}`);
       doc.text(`เลขประจำตัวผู้เสียภาษี: ${organization.taxCode}`);
@@ -542,22 +565,27 @@ module.exports = {
       doc.moveTo(padding, y + 6).lineTo(paperWidth - padding, y + 6).stroke();
 
       // loop saleTemps
-      BillSaleDetails.map((item, index) => {
+      billSaleDetails.map((item, index) => {
         const y = doc.y;
         doc.text(item.Food.name, padding, y);
         doc.text(item.Food.price, padding + 18, y, { align: 'right', width: 20 });
-        doc.text(item.qty, padding + 36, y, { align: 'right', width: 20 });
-        doc.text(item.price * item.qty, padding + 55, y, { align: 'right' });
+        doc.text(1, padding + 36, y, { align: 'right', width: 20 });
+        doc.text(item.price * 1, padding + 55, y, { align: 'right' });
       });
 
       // sum amount
       let sumAmount = 0;
       billSaleDetails.forEach((item) => {
-        sumAmount += item.price * item.qty;
+        sumAmount += item.price * 1;
       });
 
       // display amount
-      doc.text(`รวม: ${sumAmount} บาท`, { align: 'right' });
+      doc.text(`รวม: ${sumAmount}`, padding, doc.y, { align: 'right', width: paperWidth - padding - padding });
+
+      doc.text('รับเงิน ' + billSale.inputMoney, padding, doc.y, { align: 'right', width: paperWidth - padding - padding });
+
+      doc.text('เงินทอน ' + billSale.returnMoney, padding, doc.y, { align: 'right', width: paperWidth - padding - padding });
+
       doc.end();
 
       return res.send({ message: 'success', fileName: fileName });

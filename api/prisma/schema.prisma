@@ -18,7 +18,7 @@ model User{
   level String // admin, employee
   username String
   password String
-  status String @default("user")
+  status String @default("use")
   BillSales BillSale[]
 }
 model FoodType{

@@ -36,24 +36,22 @@ export class SaleComponent {
     try {
       const payload = {
         userId: this.userId,
-        tableNo: this.tableNo,
-      };
+        tableNo: this.tableNo
+      }
 
       const url = config.apiServer + '/api/saleTemp/printBillBeforePay';
       const res: any = await firstValueFrom(this.http.post(url, payload));
 
       setTimeout(() => {
         this.billForPayUrl = config.apiServer + '/' + res.fileName;
-        document
-          .getElementById('pdf-frame')
-          ?.setAttribute('src', this.billForPayUrl);
-      }, 1500);
+        document.getElementById('pdf-frame')?.setAttribute('src', this.billForPayUrl);
+      }, 1000);
     } catch (e: any) {
       Swal.fire({
         title: 'error',
         text: e.message,
-        icon: 'error',
-      });
+        icon: 'error'
+      })
     }
   }
 
@@ -61,21 +59,22 @@ export class SaleComponent {
     try {
       const payload = {
         userId: this.userId,
-        tableNo: this.tableNo,
-      };
+        tableNo: this.tableNo
+      }
+
       const url = config.apiServer + '/api/saleTemp/printBillAfterPay';
       const res: any = await firstValueFrom(this.http.post(url, payload));
 
       setTimeout(() => {
         const iframe = document.getElementById('pdf-frame') as HTMLIFrameElement;
-        iframe.setAttribute('src',config.apiServer+'/'+ res.fileName)
-      }, 1500);
+        iframe.setAttribute('src', config.apiServer + '/' + res.fileName);
+      }, 1000);
     } catch (e: any) {
       Swal.fire({
         title: 'error',
         text: e.message,
-        icon: 'error',
-      });
+        icon: 'error'
+      })
     }
   }
 
@@ -87,26 +86,28 @@ export class SaleComponent {
         amount: this.amount,
         returnMoney: this.returnMoney,
         payType: this.payType,
-        tableNo: this.tableNo,
-      };
-      this.http
-        .post(config.apiServer + '/api/saleTemp/endSale', payload)
+        tableNo: this.tableNo
+      }
+
+      this.http.post(config.apiServer + '/api/saleTemp/endSale', payload)
         .subscribe((res: any) => {
           this.fetchDataSaleTemp();
+
           document.getElementById('modalEndSale_btnClose')?.click();
           this.clearForm();
-          
-         const btnPrintBill = document.getElementById('btnPrintBill')as HTMLBRElement;
-         btnPrintBill.click();
-         this.printBillAfterPay
 
-        });
+          // click button print bill
+          const btnPrintBill = document.getElementById('btnPrintBill') as HTMLButtonElement;
+          btnPrintBill.click();
+
+          this.printBillAfterPay();
+        })
     } catch (e: any) {
       Swal.fire({
         title: 'error',
         text: e.message,
-        icon: 'error',
-      });
+        icon: 'error'
+      })
     }
   }
   clearForm() {
